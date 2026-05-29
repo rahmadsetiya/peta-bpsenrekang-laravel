@@ -2,21 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DesaExport;
+use App\Imports\DesaImport;
 use App\Models\Desa;
 use App\Models\KegiatanWilkerstatPeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\DesaExport;
-use App\Imports\DesaImport;
 
 class DesaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Desa::query();
+
+        if ($request->filled('search')) {
+            $s = '%'.$request->search.'%';
+            $query->where(fn ($q) => $q
+                ->where('kode_desa', 'like', $s)
+                ->orWhere('nama_desa', 'like', $s)
+                ->orWhere('nama_kecamatan', 'like', $s)
+            );
+        }
+
         return Inertia::render('Desa/Index', [
-            'items' => Desa::orderBy('kode_desa')->get(),
+            'items' => $query->orderBy('kode_desa')->paginate(50)->withQueryString(),
+            'filters' => ['search' => $request->search ?? ''],
         ]);
     }
 
@@ -49,7 +61,7 @@ class DesaController extends Controller
     public function update(Request $request, Desa $desa)
     {
         $request->validate([
-            'kode_desa' => 'required|unique:desa,kode_desa,' . $desa->id,
+            'kode_desa' => 'required|unique:desa,kode_desa,'.$desa->id,
             'nama_desa' => 'required',
         ]);
 
@@ -65,6 +77,7 @@ class DesaController extends Controller
     public function destroy(Desa $desa)
     {
         $desa->delete();
+
         return redirect()->route('desa.index')->with('success', 'Desa berhasil dihapus.');
     }
 
@@ -93,6 +106,7 @@ class DesaController extends Controller
     {
         $request->validate(['file' => 'required|mimes:xlsx,xls']);
         Excel::import(new DesaImport, $request->file('file'));
+
         return redirect()->route('desa.index')->with('success', 'Import berhasil.');
     }
 }

@@ -1,33 +1,28 @@
 <template>
   <AppLayout title="Opsi Kegiatan">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Daftar Opsi Kegiatan</h3>
-        <Link :href="route('opsi-kegiatan.create')" class="btn btn-primary btn-sm">
-          <i class="fas fa-plus"></i> Tambah
+    <DataTable :items="items" :col-count="3">
+      <template #actions>
+        <Link :href="route('opsi-kegiatan.create')" class="btn btn-primary">
+          <i class="fas fa-plus" style="font-size:11px"></i> Tambah
         </Link>
-      </div>
-      <div class="card-body">
-        <DataTable :items="items" :col-count="3">
-          <template #headers>
-            <th>Kode Kegiatan</th>
-            <th>Nama Kegiatan</th>
-          </template>
-          <template #row="{ row }">
-            <td>{{ row.kode_kegiatan }}</td>
-            <td>{{ row.nama_kegiatan }}</td>
-          </template>
-          <template #rowActions="{ row }">
-            <Link :href="route('opsi-kegiatan.edit', row.id)" class="btn btn-sm btn-warning mr-1">
-              <i class="fas fa-edit"></i>
-            </Link>
-            <button @click="confirmDelete(row)" class="btn btn-sm btn-danger">
-              <i class="fas fa-trash"></i>
-            </button>
-          </template>
-        </DataTable>
-      </div>
-    </div>
+      </template>
+      <template #headers>
+        <th class="table-th">Kode Kegiatan</th>
+        <th class="table-th">Nama Kegiatan</th>
+      </template>
+      <template #row="{ row }">
+        <td class="table-td font-mono text-xs text-gray-600">{{ row.kode_kegiatan }}</td>
+        <td class="table-td font-medium">{{ row.nama_kegiatan }}</td>
+      </template>
+      <template #rowActions="{ row }">
+        <Link :href="route('opsi-kegiatan.edit', row.id)" class="btn-icon btn-icon-edit" title="Edit">
+          <i class="fas fa-pencil-alt text-xs"></i>
+        </Link>
+        <button @click="confirmDelete(row)" class="btn-icon btn-icon-danger" title="Hapus">
+          <i class="fas fa-trash text-xs"></i>
+        </button>
+      </template>
+    </DataTable>
 
     <DeleteModal v-if="deleteTarget" :name="deleteTarget.nama_kegiatan"
       @confirm="doDelete" @cancel="deleteTarget = null" />
@@ -43,10 +38,11 @@ import { ref } from 'vue'
 
 defineProps({ items: Array })
 const deleteTarget = ref(null)
+
 function confirmDelete(row) { deleteTarget.value = row }
 function doDelete() {
   router.delete(route('opsi-kegiatan.destroy', deleteTarget.value.id), {
-    onFinish: () => { deleteTarget.value = null }
+    onFinish: () => { deleteTarget.value = null },
   })
 }
 </script>

@@ -2,21 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SlsExport;
+use App\Imports\SlsImport;
 use App\Models\KegiatanWilkerstatPeta;
 use App\Models\Sls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\SlsExport;
-use App\Imports\SlsImport;
 
 class SlsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Sls::query();
+
+        if ($request->filled('search')) {
+            $s = '%'.$request->search.'%';
+            $query->where(fn ($q) => $q
+                ->where('kode_sls', 'like', $s)
+                ->orWhere('nama_sls', 'like', $s)
+                ->orWhere('nama_desa', 'like', $s)
+            );
+        }
+
         return Inertia::render('Sls/Index', [
-            'items' => Sls::orderBy('kode_sls')->get(),
+            'items' => $query->orderBy('kode_sls')->paginate(50)->withQueryString(),
+            'filters' => ['search' => $request->search ?? ''],
         ]);
     }
 
@@ -49,7 +61,7 @@ class SlsController extends Controller
     public function update(Request $request, Sls $sl)
     {
         $request->validate([
-            'kode_sls' => 'required|unique:sls,kode_sls,' . $sl->id,
+            'kode_sls' => 'required|unique:sls,kode_sls,'.$sl->id,
             'nama_sls' => 'required',
         ]);
 
@@ -65,6 +77,7 @@ class SlsController extends Controller
     public function destroy(Sls $sl)
     {
         $sl->delete();
+
         return redirect()->route('sls.index')->with('success', 'SLS berhasil dihapus.');
     }
 
@@ -93,6 +106,7 @@ class SlsController extends Controller
     {
         $request->validate(['file' => 'required|mimes:xlsx,xls']);
         Excel::import(new SlsImport, $request->file('file'));
+
         return redirect()->route('sls.index')->with('success', 'Import berhasil.');
     }
 }

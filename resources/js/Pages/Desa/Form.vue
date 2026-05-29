@@ -1,70 +1,62 @@
 <template>
   <AppLayout :title="item ? 'Edit Desa' : 'Tambah Desa'">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">{{ item ? 'Edit' : 'Tambah' }} Desa</h3></div>
-      <div class="card-body">
-        <form @submit.prevent="submit">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Kode Desa <span class="text-danger">*</span></label>
-                <input v-model="form.kode_desa" type="text" class="form-control" :class="{ 'is-invalid': form.errors.kode_desa }">
-                <div class="invalid-feedback">{{ form.errors.kode_desa }}</div>
+    <div class="max-w-3xl">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">{{ item ? 'Edit' : 'Tambah' }} Desa</h2>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="submit" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Kode Desa <span class="text-red-500">*</span></label>
+                <input v-model="form.kode_desa" type="text" class="form-field" :class="{ 'form-field-error': form.errors.kode_desa }" />
+                <p v-if="form.errors.kode_desa" class="form-error">{{ form.errors.kode_desa }}</p>
+              </div>
+              <div>
+                <label class="form-label">Nama Desa <span class="text-red-500">*</span></label>
+                <input v-model="form.nama_desa" type="text" class="form-field" :class="{ 'form-field-error': form.errors.nama_desa }" />
+                <p v-if="form.errors.nama_desa" class="form-error">{{ form.errors.nama_desa }}</p>
+              </div>
+              <div>
+                <label class="form-label">Luas</label>
+                <input v-model="form.luas" type="number" step="0.01" class="form-field" />
+              </div>
+              <div>
+                <label class="form-label">Kode Provinsi</label>
+                <input v-model="form.kode_prov" type="text" class="form-field" />
+              </div>
+              <div>
+                <label class="form-label">Nama Provinsi</label>
+                <input v-model="form.nama_provinsi" type="text" class="form-field" />
+              </div>
+              <div>
+                <label class="form-label">Kode Kabupaten</label>
+                <input v-model="form.kode_kabupaten" type="text" class="form-field" />
+              </div>
+              <div>
+                <label class="form-label">Nama Kabupaten</label>
+                <input v-model="form.nama_kabupaten" type="text" class="form-field" />
+              </div>
+              <div>
+                <label class="form-label">Kode Kecamatan</label>
+                <input v-model="form.kode_kecamatan" type="text" class="form-field" />
+              </div>
+              <div>
+                <label class="form-label">Nama Kecamatan</label>
+                <input v-model="form.nama_kecamatan" type="text" class="form-field" />
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Nama Desa <span class="text-danger">*</span></label>
-                <input v-model="form.nama_desa" type="text" class="form-control" :class="{ 'is-invalid': form.errors.nama_desa }">
-                <div class="invalid-feedback">{{ form.errors.nama_desa }}</div>
-              </div>
+
+            <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+              <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                <i v-if="form.processing" class="fas fa-spinner fa-spin text-xs"></i>
+                <span v-else>Simpan</span>
+              </button>
+              <Link :href="route('desa.index')" class="btn btn-secondary">Batal</Link>
             </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Luas</label>
-                <input v-model="form.luas" type="number" step="0.01" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Kode Provinsi</label>
-                <input v-model="form.kode_prov" type="text" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Nama Provinsi</label>
-                <input v-model="form.nama_provinsi" type="text" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Kode Kabupaten</label>
-                <input v-model="form.kode_kabupaten" type="text" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Nama Kabupaten</label>
-                <input v-model="form.nama_kabupaten" type="text" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Kode Kecamatan</label>
-                <input v-model="form.kode_kecamatan" type="text" class="form-control">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Nama Kecamatan</label>
-                <input v-model="form.nama_kecamatan" type="text" class="form-control">
-              </div>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary mr-2" :disabled="form.processing">Simpan</button>
-          <Link :href="route('desa.index')" class="btn btn-secondary">Batal</Link>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   </AppLayout>

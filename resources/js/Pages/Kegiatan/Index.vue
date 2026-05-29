@@ -1,63 +1,76 @@
 <template>
   <AppLayout title="Kegiatan">
+    <!-- Status filter pills -->
+    <div class="flex items-center gap-2 flex-wrap mb-4">
+      <button
+        v-for="s in ['Semua', ...statuses]"
+        :key="s"
+        @click="filterStatus = s === 'Semua' ? '' : s"
+        :class="[
+          'px-3 py-1.5 rounded-full text-xs font-medium transition-colors border',
+          (filterStatus === '' && s === 'Semua') || filterStatus === s
+            ? 'bg-indigo-600 text-white border-indigo-600'
+            : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400 hover:text-indigo-600',
+        ]"
+      >{{ s }}</button>
+    </div>
+
     <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Daftar Kegiatan</h3>
-        <Link v-if="canCreate" :href="route('kegiatan.create')" class="btn btn-primary btn-sm">
-          <i class="fas fa-plus"></i> Tambah
+      <div class="card-header">
+        <h2 class="card-title">Daftar Kegiatan</h2>
+        <Link v-if="canCreate" :href="route('kegiatan.create')" class="btn btn-primary">
+          <i class="fas fa-plus" style="font-size:11px"></i> Tambah
         </Link>
       </div>
-      <div class="card-body">
-        <div class="mb-3 d-flex gap-2 flex-wrap">
-          <button
-            v-for="s in ['semua', ...statuses]" :key="s"
-            @click="filterStatus = s === 'semua' ? '' : s"
-            class="btn btn-sm"
-            :class="(filterStatus === '' && s === 'semua') || filterStatus === s ? 'btn-primary' : 'btn-outline-secondary'"
-          >{{ s }}</button>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="thead-dark">
-              <tr>
-                <th>#</th>
-                <th>Kegiatan</th>
-                <th>Tahun</th>
-                <th>Bulan</th>
-                <th>Batas Cetak</th>
-                <th>Status</th>
-                <th>Dibuat Oleh</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="!filtered.length">
-                <td colspan="8" class="text-center text-muted">Tidak ada data</td>
-              </tr>
-              <tr v-for="(k, i) in filtered" :key="k.id">
-                <td>{{ i + 1 }}</td>
-                <td>{{ k.opsi_kegiatan?.nama_kegiatan }}</td>
-                <td>{{ k.tahun }}</td>
-                <td>{{ k.bulan }}</td>
-                <td>{{ k.tanggal_batas_cetak }}</td>
-                <td><span class="badge" :class="statusBadge(k.status)">{{ k.status }}</span></td>
-                <td>{{ k.user?.username }}</td>
-                <td>
-                  <Link :href="route('kegiatan.detail', k.id)" class="btn btn-sm btn-info mr-1">
-                    <i class="fas fa-eye"></i>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="table-th w-10">#</th>
+              <th class="table-th">Kegiatan</th>
+              <th class="table-th">Tahun</th>
+              <th class="table-th">Bulan</th>
+              <th class="table-th">Batas Cetak</th>
+              <th class="table-th">Status</th>
+              <th class="table-th">Dibuat Oleh</th>
+              <th class="table-th text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 bg-white">
+            <tr v-if="!filtered.length">
+              <td colspan="8" class="px-4 py-12 text-center">
+                <div class="flex flex-col items-center gap-2 text-gray-400">
+                  <i class="fas fa-inbox text-3xl"></i>
+                  <span class="text-sm">Tidak ada data</span>
+                </div>
+              </td>
+            </tr>
+            <tr v-for="(k, i) in filtered" :key="k.id" class="hover:bg-gray-50/60 transition-colors">
+              <td class="table-td-muted font-mono text-xs">{{ i + 1 }}</td>
+              <td class="table-td font-medium">{{ k.opsi_kegiatan?.nama_kegiatan }}</td>
+              <td class="table-td-muted">{{ k.tahun }}</td>
+              <td class="table-td-muted">{{ k.bulan }}</td>
+              <td class="table-td-muted text-xs">{{ formatDate(k.tanggal_batas_cetak) }}</td>
+              <td class="table-td">
+                <span :class="['badge', statusBadge(k.status)]">{{ k.status }}</span>
+              </td>
+              <td class="table-td-muted text-xs">{{ k.user?.username }}</td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <Link :href="route('kegiatan.detail', k.id)" class="btn-icon btn-icon-info" title="Detail">
+                    <i class="fas fa-eye text-xs"></i>
                   </Link>
-                  <Link v-if="canEdit(k)" :href="route('kegiatan.edit', k.id)" class="btn btn-sm btn-warning mr-1">
-                    <i class="fas fa-edit"></i>
+                  <Link v-if="canEdit(k)" :href="route('kegiatan.edit', k.id)" class="btn-icon btn-icon-edit" title="Edit">
+                    <i class="fas fa-pencil-alt text-xs"></i>
                   </Link>
-                  <button v-if="canDelete" @click="confirmDelete(k)" class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash"></i>
+                  <button v-if="canDelete" @click="confirmDelete(k)" class="btn-icon btn-icon-danger" title="Hapus">
+                    <i class="fas fa-trash text-xs"></i>
                   </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -97,18 +110,21 @@ const filtered = computed(() => {
 function confirmDelete(k) { deleteTarget.value = k }
 function doDelete() {
   router.delete(route('kegiatan.destroy', deleteTarget.value.id), {
-    onFinish: () => { deleteTarget.value = null }
+    onFinish: () => { deleteTarget.value = null },
   })
 }
 
-function statusBadge(status) {
-  const map = {
-    'disiapkan (IPDS)': 'badge-secondary',
-    'digunakan': 'badge-primary',
-    'scan peta': 'badge-warning',
-    'upload peta': 'badge-info',
-    'selesai': 'badge-success',
-  }
-  return map[status] ?? 'badge-light'
+function formatDate(d) {
+  if (!d) return '-'
+  return new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
+
+const STATUS_BADGE = {
+  'disiapkan (IPDS)': 'badge-gray',
+  'digunakan': 'badge-indigo',
+  'scan peta': 'badge-amber',
+  'upload peta': 'badge-sky',
+  'selesai': 'badge-emerald',
+}
+function statusBadge(s) { return STATUS_BADGE[s] ?? 'badge-gray' }
 </script>

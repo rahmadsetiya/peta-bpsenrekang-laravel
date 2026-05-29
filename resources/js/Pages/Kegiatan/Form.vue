@@ -1,129 +1,142 @@
 <template>
   <AppLayout :title="kegiatan ? 'Edit Kegiatan' : 'Tambah Kegiatan'">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">{{ kegiatan ? 'Edit' : 'Tambah' }} Kegiatan</h3>
-      </div>
-      <div class="card-body">
-        <form @submit.prevent="submit">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Opsi Kegiatan <span class="text-danger">*</span></label>
-                <select v-model="form.id_opsi_kegiatan" class="form-control" :class="{ 'is-invalid': form.errors.id_opsi_kegiatan }">
+    <div class="max-w-4xl space-y-4">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">{{ kegiatan ? 'Edit' : 'Tambah' }} Kegiatan</h2>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="submit" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="sm:col-span-2 lg:col-span-3">
+                <label class="form-label">Opsi Kegiatan <span class="text-red-500">*</span></label>
+                <select v-model="form.id_opsi_kegiatan" class="form-field" :class="{ 'form-field-error': form.errors.id_opsi_kegiatan }">
                   <option value="">-- Pilih --</option>
                   <option v-for="o in opsiKegiatan" :key="o.id" :value="o.id">
                     {{ o.kode_kegiatan }} - {{ o.nama_kegiatan }}
                   </option>
                 </select>
-                <div class="invalid-feedback">{{ form.errors.id_opsi_kegiatan }}</div>
+                <p v-if="form.errors.id_opsi_kegiatan" class="form-error">{{ form.errors.id_opsi_kegiatan }}</p>
               </div>
-            </div>
 
-            <div class="col-md-3">
-              <div class="form-group">
-                <label>Tahun <span class="text-danger">*</span></label>
-                <input v-model="form.tahun" type="number" class="form-control" :class="{ 'is-invalid': form.errors.tahun }">
-                <div class="invalid-feedback">{{ form.errors.tahun }}</div>
+              <div>
+                <label class="form-label">Tahun <span class="text-red-500">*</span></label>
+                <input v-model="form.tahun" type="number" class="form-field" :class="{ 'form-field-error': form.errors.tahun }" />
+                <p v-if="form.errors.tahun" class="form-error">{{ form.errors.tahun }}</p>
               </div>
-            </div>
 
-            <div class="col-md-3">
-              <div class="form-group">
-                <label>Bulan <span class="text-danger">*</span></label>
-                <select v-model="form.bulan" class="form-control" :class="{ 'is-invalid': form.errors.bulan }">
+              <div>
+                <label class="form-label">Bulan <span class="text-red-500">*</span></label>
+                <select v-model="form.bulan" class="form-field" :class="{ 'form-field-error': form.errors.bulan }">
                   <option value="">-- Pilih --</option>
                   <option v-for="b in bulanList" :key="b" :value="b">{{ b }}</option>
                 </select>
-                <div class="invalid-feedback">{{ form.errors.bulan }}</div>
+                <p v-if="form.errors.bulan" class="form-error">{{ form.errors.bulan }}</p>
               </div>
-            </div>
 
-            <div class="col-md-6">
-              <div class="form-group">
-                <label>Batas Cetak</label>
-                <input v-model="form.tanggal_batas_cetak" type="date" class="form-control">
+              <div>
+                <label class="form-label">Batas Cetak</label>
+                <input v-model="form.tanggal_batas_cetak" type="date" class="form-field" />
               </div>
-            </div>
 
-            <div v-if="canChangeStatus" class="col-md-6">
-              <div class="form-group">
-                <label>Status</label>
-                <select v-model="form.status" class="form-control">
+              <div v-if="canChangeStatus">
+                <label class="form-label">Status</label>
+                <select v-model="form.status" class="form-field">
                   <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
                 </select>
               </div>
             </div>
-          </div>
 
-          <!-- Blok Sensus Selection -->
-          <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="m-0">Blok Sensus</h5>
-              <div>
-                <button type="button" @click="selectAll('blok_sensus_ids', blokSensus)" class="btn btn-xs btn-outline-primary mr-1">Pilih Semua</button>
-                <button type="button" @click="form.blok_sensus_ids = []" class="btn btn-xs btn-outline-secondary">Hapus Semua</button>
-              </div>
-            </div>
-            <div class="card-body" style="max-height:200px;overflow-y:auto">
-              <div class="row">
-                <div v-for="bs in blokSensus" :key="bs.id" class="col-md-4">
-                  <div class="form-check">
-                    <input type="checkbox" :id="`bs_${bs.id}`" :value="bs.id" v-model="form.blok_sensus_ids" class="form-check-input">
-                    <label :for="`bs_${bs.id}`" class="form-check-label small">{{ bs.kode_bs }} - {{ bs.nama_bs }}</label>
+            <!-- Selection panels -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
+              <!-- Blok Sensus -->
+              <div class="card border-0 bg-gray-50 rounded-xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                  <h3 class="text-sm font-semibold text-gray-700">
+                    Blok Sensus
+                    <span class="badge badge-indigo ml-1">{{ form.blok_sensus_ids.length }}</span>
+                  </h3>
+                  <div class="flex gap-1">
+                    <button type="button" @click="selectAll('blok_sensus_ids', blokSensus)"
+                      class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Semua</button>
+                    <span class="text-gray-300">|</span>
+                    <button type="button" @click="form.blok_sensus_ids = []"
+                      class="text-xs text-gray-500 hover:text-gray-700">Hapus</button>
                   </div>
+                </div>
+                <div class="overflow-y-auto p-3 space-y-1" style="max-height:180px">
+                  <label v-for="bs in blokSensus" :key="bs.id"
+                    class="flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-white transition-colors text-xs">
+                    <input type="checkbox" :value="bs.id" v-model="form.blok_sensus_ids"
+                      class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 shrink-0" />
+                    <span class="truncate text-gray-700">{{ bs.kode_bs }} - {{ bs.nama_bs }}</span>
+                  </label>
+                  <p v-if="!blokSensus.length" class="text-xs text-gray-400 text-center py-2">Tidak ada data</p>
+                </div>
+              </div>
+
+              <!-- SLS -->
+              <div class="card border-0 bg-gray-50 rounded-xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                  <h3 class="text-sm font-semibold text-gray-700">
+                    SLS
+                    <span class="badge badge-indigo ml-1">{{ form.sls_ids.length }}</span>
+                  </h3>
+                  <div class="flex gap-1">
+                    <button type="button" @click="selectAll('sls_ids', slsList)"
+                      class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Semua</button>
+                    <span class="text-gray-300">|</span>
+                    <button type="button" @click="form.sls_ids = []"
+                      class="text-xs text-gray-500 hover:text-gray-700">Hapus</button>
+                  </div>
+                </div>
+                <div class="overflow-y-auto p-3 space-y-1" style="max-height:180px">
+                  <label v-for="s in slsList" :key="s.id"
+                    class="flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-white transition-colors text-xs">
+                    <input type="checkbox" :value="s.id" v-model="form.sls_ids"
+                      class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 shrink-0" />
+                    <span class="truncate text-gray-700">{{ s.kode_sls }} - {{ s.nama_sls }}</span>
+                  </label>
+                  <p v-if="!slsList.length" class="text-xs text-gray-400 text-center py-2">Tidak ada data</p>
+                </div>
+              </div>
+
+              <!-- Desa -->
+              <div class="card border-0 bg-gray-50 rounded-xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                  <h3 class="text-sm font-semibold text-gray-700">
+                    Desa
+                    <span class="badge badge-indigo ml-1">{{ form.desa_ids.length }}</span>
+                  </h3>
+                  <div class="flex gap-1">
+                    <button type="button" @click="selectAll('desa_ids', desaList)"
+                      class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Semua</button>
+                    <span class="text-gray-300">|</span>
+                    <button type="button" @click="form.desa_ids = []"
+                      class="text-xs text-gray-500 hover:text-gray-700">Hapus</button>
+                  </div>
+                </div>
+                <div class="overflow-y-auto p-3 space-y-1" style="max-height:180px">
+                  <label v-for="d in desaList" :key="d.id"
+                    class="flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-white transition-colors text-xs">
+                    <input type="checkbox" :value="d.id" v-model="form.desa_ids"
+                      class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 shrink-0" />
+                    <span class="truncate text-gray-700">{{ d.kode_desa }} - {{ d.nama_desa }}</span>
+                  </label>
+                  <p v-if="!desaList.length" class="text-xs text-gray-400 text-center py-2">Tidak ada data</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- SLS Selection -->
-          <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="m-0">SLS</h5>
-              <div>
-                <button type="button" @click="selectAll('sls_ids', slsList)" class="btn btn-xs btn-outline-primary mr-1">Pilih Semua</button>
-                <button type="button" @click="form.sls_ids = []" class="btn btn-xs btn-outline-secondary">Hapus Semua</button>
-              </div>
+            <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+              <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                <i v-if="form.processing" class="fas fa-spinner fa-spin text-xs"></i>
+                <span v-else>Simpan</span>
+              </button>
+              <Link :href="route('kegiatan.index')" class="btn btn-secondary">Batal</Link>
             </div>
-            <div class="card-body" style="max-height:200px;overflow-y:auto">
-              <div class="row">
-                <div v-for="s in slsList" :key="s.id" class="col-md-4">
-                  <div class="form-check">
-                    <input type="checkbox" :id="`sls_${s.id}`" :value="s.id" v-model="form.sls_ids" class="form-check-input">
-                    <label :for="`sls_${s.id}`" class="form-check-label small">{{ s.kode_sls }} - {{ s.nama_sls }}</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Desa Selection -->
-          <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="m-0">Desa</h5>
-              <div>
-                <button type="button" @click="selectAll('desa_ids', desaList)" class="btn btn-xs btn-outline-primary mr-1">Pilih Semua</button>
-                <button type="button" @click="form.desa_ids = []" class="btn btn-xs btn-outline-secondary">Hapus Semua</button>
-              </div>
-            </div>
-            <div class="card-body" style="max-height:200px;overflow-y:auto">
-              <div class="row">
-                <div v-for="d in desaList" :key="d.id" class="col-md-4">
-                  <div class="form-check">
-                    <input type="checkbox" :id="`desa_${d.id}`" :value="d.id" v-model="form.desa_ids" class="form-check-input">
-                    <label :for="`desa_${d.id}`" class="form-check-label small">{{ d.kode_desa }} - {{ d.nama_desa }}</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-3">
-            <button type="submit" class="btn btn-primary mr-2" :disabled="form.processing">Simpan</button>
-            <Link :href="route('kegiatan.index')" class="btn btn-secondary">Batal</Link>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   </AppLayout>

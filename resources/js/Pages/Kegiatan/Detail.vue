@@ -1,110 +1,102 @@
 <template>
-  <AppLayout :title="`Detail Kegiatan`">
-    <div class="row">
-      <div class="col-md-4">
-        <div class="card card-primary">
+  <AppLayout title="Detail Kegiatan">
+    <div class="flex items-center gap-2 mb-5">
+      <Link :href="route('kegiatan.index')" class="btn btn-secondary">
+        <i class="fas fa-arrow-left" style="font-size:11px"></i> Kembali
+      </Link>
+      <Link :href="route('kelola-peta.index', kegiatan.id)" class="btn btn-warning">
+        <i class="fas fa-map" style="font-size:11px"></i> Kelola Peta
+      </Link>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <!-- Left column -->
+      <div class="space-y-4">
+        <!-- Info -->
+        <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Info Kegiatan</h3>
-            <div class="card-tools">
-              <Link :href="route('kelola-peta.index', kegiatan.id)" class="btn btn-sm btn-warning">
-                <i class="fas fa-map"></i> Kelola Peta
-              </Link>
-            </div>
+            <h2 class="card-title">Info Kegiatan</h2>
+            <span :class="['badge', statusBadge(kegiatan.status)]">{{ kegiatan.status }}</span>
           </div>
-          <div class="card-body">
-            <dl class="row">
-              <dt class="col-sm-5">Kegiatan</dt>
-              <dd class="col-sm-7">{{ kegiatan.opsi_kegiatan?.nama_kegiatan }}</dd>
-              <dt class="col-sm-5">Tahun</dt><dd class="col-sm-7">{{ kegiatan.tahun }}</dd>
-              <dt class="col-sm-5">Bulan</dt><dd class="col-sm-7">{{ kegiatan.bulan }}</dd>
-              <dt class="col-sm-5">Batas Cetak</dt><dd class="col-sm-7">{{ kegiatan.tanggal_batas_cetak }}</dd>
-              <dt class="col-sm-5">Status</dt>
-              <dd class="col-sm-7">
-                <span class="badge" :class="statusBadge(kegiatan.status)">{{ kegiatan.status }}</span>
-              </dd>
-              <dt class="col-sm-5">Dibuat Oleh</dt><dd class="col-sm-7">{{ kegiatan.user?.username }}</dd>
-            </dl>
+          <div class="divide-y divide-gray-50">
+            <div v-for="row in infoRows" :key="row.label" class="flex justify-between items-center px-6 py-3">
+              <span class="text-xs text-gray-500">{{ row.label }}</span>
+              <span class="text-sm font-medium text-gray-900">{{ row.value ?? '-' }}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Status Timeline -->
+        <!-- Status timeline -->
         <div class="card">
-          <div class="card-header"><h3 class="card-title">Alur Status</h3></div>
-          <div class="card-body p-0">
-            <ul class="list-group list-group-flush">
-              <li v-for="s in statuses" :key="s" class="list-group-item d-flex align-items-center">
-                <i class="fas mr-2" :class="kegiatan.status === s ? 'fa-check-circle text-success' : 'fa-circle text-muted'"></i>
-                {{ s }}
+          <div class="card-header">
+            <h2 class="card-title">Alur Status</h2>
+          </div>
+          <div class="p-4">
+            <ol class="relative space-y-3">
+              <li v-for="s in statuses" :key="s" class="flex items-center gap-3">
+                <div :class="[
+                  'w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs',
+                  kegiatan.status === s
+                    ? 'bg-indigo-600 text-white ring-2 ring-indigo-200'
+                    : statusIndex(s) < statusIndex(kegiatan.status)
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-400'
+                ]">
+                  <i v-if="statusIndex(s) < statusIndex(kegiatan.status)" class="fas fa-check" style="font-size:8px"></i>
+                  <i v-else-if="kegiatan.status === s" class="fas fa-circle" style="font-size:6px"></i>
+                </div>
+                <span :class="[
+                  'text-xs',
+                  kegiatan.status === s ? 'text-indigo-700 font-semibold' : 'text-gray-500'
+                ]">{{ s }}</span>
               </li>
-            </ul>
+            </ol>
           </div>
         </div>
       </div>
 
-      <div class="col-md-8">
-        <!-- Wilkerstat -->
-        <div class="card">
-          <div class="card-header"><h3 class="card-title">Blok Sensus ({{ kegiatan.blok_sensus?.length }})</h3></div>
-          <div class="card-body p-0" style="max-height:200px;overflow-y:auto">
-            <table class="table table-sm mb-0">
-              <tbody>
-                <tr v-if="!kegiatan.blok_sensus?.length"><td class="text-muted text-center">Tidak ada</td></tr>
-                <tr v-for="bs in kegiatan.blok_sensus" :key="bs.id">
-                  <td>{{ bs.kode_bs }} - {{ bs.nama_bs }}</td>
-                </tr>
-              </tbody>
-            </table>
+      <!-- Right column -->
+      <div class="xl:col-span-2 space-y-4">
+        <!-- Wilkerstat counts -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="card p-4 text-center">
+            <p class="text-2xl font-bold text-gray-900">{{ kegiatan.blok_sensus?.length ?? 0 }}</p>
+            <p class="text-xs text-gray-500 mt-1">Blok Sensus</p>
+          </div>
+          <div class="card p-4 text-center">
+            <p class="text-2xl font-bold text-gray-900">{{ kegiatan.sls?.length ?? 0 }}</p>
+            <p class="text-xs text-gray-500 mt-1">SLS</p>
+          </div>
+          <div class="card p-4 text-center">
+            <p class="text-2xl font-bold text-gray-900">{{ kegiatan.desa?.length ?? 0 }}</p>
+            <p class="text-xs text-gray-500 mt-1">Desa</p>
           </div>
         </div>
 
+        <!-- Peta gallery -->
         <div class="card">
-          <div class="card-header"><h3 class="card-title">SLS ({{ kegiatan.sls?.length }})</h3></div>
-          <div class="card-body p-0" style="max-height:200px;overflow-y:auto">
-            <table class="table table-sm mb-0">
-              <tbody>
-                <tr v-if="!kegiatan.sls?.length"><td class="text-muted text-center">Tidak ada</td></tr>
-                <tr v-for="s in kegiatan.sls" :key="s.id">
-                  <td>{{ s.kode_sls }} - {{ s.nama_sls }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header"><h3 class="card-title">Desa ({{ kegiatan.desa?.length }})</h3></div>
-          <div class="card-body p-0" style="max-height:200px;overflow-y:auto">
-            <table class="table table-sm mb-0">
-              <tbody>
-                <tr v-if="!kegiatan.desa?.length"><td class="text-muted text-center">Tidak ada</td></tr>
-                <tr v-for="d in kegiatan.desa" :key="d.id">
-                  <td>{{ d.kode_desa }} - {{ d.nama_desa }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Peta -->
-        <div class="card">
-          <div class="card-header d-flex justify-content-between">
-            <h3 class="card-title">Peta Wilkerstat ({{ kegiatan.wilkerstat_peta?.length }})</h3>
-            <Link :href="route('kelola-peta.index', kegiatan.id)" class="btn btn-sm btn-primary">
-              <i class="fas fa-map"></i> Kelola
-            </Link>
+          <div class="card-header">
+            <h2 class="card-title">Peta Terupload</h2>
+            <div class="flex items-center gap-2">
+              <span class="badge badge-gray">{{ mainPeta.length }}</span>
+              <Link :href="route('kelola-peta.index', kegiatan.id)" class="btn btn-primary" style="padding:4px 12px;font-size:12px">
+                <i class="fas fa-map" style="font-size:10px"></i> Kelola
+              </Link>
+            </div>
           </div>
           <div class="card-body">
-            <div v-if="!kegiatan.wilkerstat_peta?.length" class="text-muted">Belum ada peta diupload</div>
-            <div class="row">
-              <div v-for="p in mainPeta" :key="p.id" class="col-md-4 mb-2">
-                <div class="card card-outline card-secondary">
-                  <div class="card-body p-2">
-                    <a :href="route('preview-peta', p.file_path)" target="_blank">
-                      <img :src="route('preview-peta', p.file_path)" class="img-fluid rounded">
-                    </a>
-                    <p class="small mt-1 mb-0 text-truncate" :title="p.nama_file">{{ p.nama_file }}</p>
-                    <small class="text-muted">{{ p.wilkerstat_type }}</small>
-                  </div>
+            <div v-if="!mainPeta.length" class="flex flex-col items-center gap-2 py-6 text-gray-400">
+              <i class="fas fa-images text-3xl"></i>
+              <p class="text-sm">Belum ada peta diupload</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div v-for="p in mainPeta" :key="p.id" class="rounded-xl overflow-hidden border border-gray-200">
+                <a :href="route('preview-peta', p.file_path)" target="_blank">
+                  <img :src="route('preview-peta', p.file_path)" class="w-full aspect-video object-cover hover:opacity-90 transition-opacity" />
+                </a>
+                <div class="p-2">
+                  <p class="text-xs text-gray-700 font-medium truncate" :title="p.nama_file">{{ p.nama_file }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ p.wilkerstat_type }}</p>
                 </div>
               </div>
             </div>
@@ -112,10 +104,6 @@
         </div>
       </div>
     </div>
-
-    <Link :href="route('kegiatan.index')" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Kembali
-    </Link>
   </AppLayout>
 </template>
 
@@ -130,14 +118,29 @@ const mainPeta = computed(() =>
   (props.kegiatan.wilkerstat_peta ?? []).filter(p => !p.id_parent_peta)
 )
 
-function statusBadge(status) {
-  const map = {
-    'disiapkan (IPDS)': 'badge-secondary',
-    'digunakan': 'badge-primary',
-    'scan peta': 'badge-warning',
-    'upload peta': 'badge-info',
-    'selesai': 'badge-success',
-  }
-  return map[status] ?? 'badge-light'
+const infoRows = computed(() => [
+  { label: 'Kegiatan', value: props.kegiatan.opsi_kegiatan?.nama_kegiatan },
+  { label: 'Tahun', value: props.kegiatan.tahun },
+  { label: 'Bulan', value: props.kegiatan.bulan },
+  { label: 'Batas Cetak', value: formatDate(props.kegiatan.tanggal_batas_cetak) },
+  { label: 'Dibuat Oleh', value: props.kegiatan.user?.username },
+])
+
+function formatDate(d) {
+  if (!d) return '-'
+  return new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const STATUS_BADGE = {
+  'disiapkan (IPDS)': 'badge-gray',
+  'digunakan': 'badge-indigo',
+  'scan peta': 'badge-amber',
+  'upload peta': 'badge-sky',
+  'selesai': 'badge-emerald',
+}
+function statusBadge(s) { return STATUS_BADGE[s] ?? 'badge-gray' }
+
+function statusIndex(s) {
+  return props.statuses?.indexOf(s) ?? -1
 }
 </script>

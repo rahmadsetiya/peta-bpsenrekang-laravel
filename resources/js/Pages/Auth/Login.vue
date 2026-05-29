@@ -1,62 +1,89 @@
 <template>
-  <div class="hold-transition login-page">
-    <div class="login-box">
-      <div class="login-logo">
-        <b>Peta</b> BPS Enrekang
+  <div class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm">
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-indigo-500 rounded-2xl mb-4 shadow-lg">
+          <i class="fas fa-map text-white text-2xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white">
+          <span class="text-indigo-400">Peta</span> BPS Enrekang
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">Sistem Peta Wilkerstat</p>
       </div>
-      <div class="card">
-        <div class="card-body login-card-body">
-          <p class="login-box-msg">Masuk ke sistem peta wilkerstat</p>
 
-          <form @submit.prevent="submit">
-            <div class="input-group mb-3">
+      <!-- Card -->
+      <div class="bg-white rounded-2xl shadow-2xl p-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6">Masuk ke Akun</h2>
+
+        <form @submit.prevent="submit" class="space-y-4">
+          <!-- Username -->
+          <div>
+            <label class="form-label">Username</label>
+            <div class="relative">
+              <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
               <input
                 v-model="form.username"
                 type="text"
-                class="form-control"
-                :class="{ 'is-invalid': form.errors.username }"
-                placeholder="Username"
+                class="form-field pl-9"
+                :class="{ 'form-field-error': form.errors.username }"
+                placeholder="Masukkan username"
                 autofocus
+                autocomplete="username"
               />
-              <div class="input-group-append">
-                <div class="input-group-text"><span class="fas fa-user"></span></div>
-              </div>
-              <div v-if="form.errors.username" class="invalid-feedback d-block">{{ form.errors.username }}</div>
             </div>
+            <p v-if="form.errors.username" class="form-error">{{ form.errors.username }}</p>
+          </div>
 
-            <div class="input-group mb-3">
+          <!-- Password -->
+          <div>
+            <label class="form-label">Password</label>
+            <div class="relative">
+              <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
               <input
                 v-model="form.password"
                 :type="showPass ? 'text' : 'password'"
-                class="form-control"
-                :class="{ 'is-invalid': form.errors.password }"
-                placeholder="Password"
+                class="form-field pl-9 pr-10"
+                :class="{ 'form-field-error': form.errors.password }"
+                placeholder="Masukkan password"
+                autocomplete="current-password"
               />
-              <div class="input-group-append">
-                <div class="input-group-text" style="cursor:pointer" @click="showPass = !showPass">
-                  <span :class="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></span>
-                </div>
-              </div>
-              <div v-if="form.errors.password" class="invalid-feedback d-block">{{ form.errors.password }}</div>
+              <button
+                type="button"
+                @click="showPass = !showPass"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i :class="showPass ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-xs"></i>
+              </button>
             </div>
+            <p v-if="form.errors.password" class="form-error">{{ form.errors.password }}</p>
+          </div>
 
-            <div class="row">
-              <div class="col-8">
-                <div class="icheck-primary">
-                  <input v-model="form.remember" type="checkbox" id="remember">
-                  <label for="remember">Ingat saya</label>
-                </div>
-              </div>
-              <div class="col-4">
-                <button type="submit" class="btn btn-primary btn-block" :disabled="form.processing">
-                  <span v-if="form.processing"><i class="fas fa-spinner fa-spin"></i></span>
-                  <span v-else>Masuk</span>
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
+          <!-- Remember -->
+          <div class="flex items-center gap-2 pt-1">
+            <input
+              v-model="form.remember"
+              id="remember"
+              type="checkbox"
+              class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+            />
+            <label for="remember" class="text-sm text-gray-600 cursor-pointer">Ingat saya</label>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="form.processing"
+            class="btn btn-primary w-full justify-center py-2.5 text-sm mt-2"
+          >
+            <i v-if="form.processing" class="fas fa-spinner fa-spin text-xs"></i>
+            <span v-else>Masuk</span>
+          </button>
+        </form>
       </div>
+
+      <p class="text-center text-slate-500 text-xs mt-6">
+        BPS Kabupaten Enrekang &copy; {{ year }}
+      </p>
     </div>
   </div>
 </template>
@@ -66,6 +93,7 @@ import { useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 const showPass = ref(false)
+const year = new Date().getFullYear()
 
 const form = useForm({
   username: '',

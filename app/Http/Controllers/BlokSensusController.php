@@ -2,22 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BlokSensusExport;
+use App\Imports\BlokSensusImport;
 use App\Models\BlokSensus;
-use App\Models\Kegiatan;
 use App\Models\KegiatanWilkerstatPeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\BlokSensusExport;
-use App\Imports\BlokSensusImport;
 
 class BlokSensusController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = BlokSensus::query();
+
+        if ($request->filled('search')) {
+            $s = '%'.$request->search.'%';
+            $query->where(fn ($q) => $q
+                ->where('kode_bs', 'like', $s)
+                ->orWhere('nama_bs', 'like', $s)
+                ->orWhere('nama_desa', 'like', $s)
+                ->orWhere('nama_kecamatan', 'like', $s)
+            );
+        }
+
         return Inertia::render('BlokSensus/Index', [
-            'items' => BlokSensus::orderBy('kode_bs')->get(),
+            'items' => $query->orderBy('kode_bs')->paginate(50)->withQueryString(),
+            'filters' => ['search' => $request->search ?? ''],
         ]);
     }
 
@@ -50,7 +62,7 @@ class BlokSensusController extends Controller
     public function update(Request $request, BlokSensus $blokSensu)
     {
         $request->validate([
-            'kode_bs' => 'required|unique:blok_sensus,kode_bs,' . $blokSensu->id,
+            'kode_bs' => 'required|unique:blok_sensus,kode_bs,'.$blokSensu->id,
             'nama_bs' => 'required',
         ]);
 
@@ -66,6 +78,7 @@ class BlokSensusController extends Controller
     public function destroy(BlokSensus $blokSensu)
     {
         $blokSensu->delete();
+
         return redirect()->route('blok-sensus.index')->with('success', 'Blok sensus berhasil dihapus.');
     }
 
@@ -94,6 +107,7 @@ class BlokSensusController extends Controller
     {
         $request->validate(['file' => 'required|mimes:xlsx,xls']);
         Excel::import(new BlokSensusImport, $request->file('file'));
+
         return redirect()->route('blok-sensus.index')->with('success', 'Import berhasil.');
     }
 }

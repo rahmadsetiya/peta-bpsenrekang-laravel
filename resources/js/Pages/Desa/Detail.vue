@@ -1,46 +1,92 @@
 <template>
   <AppLayout :title="`Detail Desa: ${item.kode_desa}`">
-    <div class="row">
-      <div class="col-md-4">
-        <div class="card card-primary">
-          <div class="card-header"><h3 class="card-title">Info Desa</h3></div>
-          <div class="card-body">
-            <dl class="row">
-              <dt class="col-sm-5">Kode Desa</dt><dd class="col-sm-7">{{ item.kode_desa }}</dd>
-              <dt class="col-sm-5">Nama Desa</dt><dd class="col-sm-7">{{ item.nama_desa }}</dd>
-              <dt class="col-sm-5">Luas</dt><dd class="col-sm-7">{{ item.luas }}</dd>
-              <dt class="col-sm-5">Kecamatan</dt><dd class="col-sm-7">{{ item.nama_kecamatan }}</dd>
-            </dl>
+    <div class="flex items-center gap-2 mb-5">
+      <Link :href="route('desa.index')" class="btn btn-secondary">
+        <i class="fas fa-arrow-left" style="font-size:11px"></i> Kembali
+      </Link>
+      <Link :href="route('desa.edit', item.id)" class="btn btn-warning">
+        <i class="fas fa-pencil-alt" style="font-size:11px"></i> Edit
+      </Link>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <!-- Info card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Info Desa</h2>
+        </div>
+        <div class="divide-y divide-gray-50">
+          <div v-for="row in infoRows" :key="row.label" class="flex justify-between items-center px-6 py-3">
+            <span class="text-xs text-gray-500">{{ row.label }}</span>
+            <span :class="['text-sm font-medium text-gray-900', row.mono && 'font-mono']">{{ row.value ?? '-' }}</span>
           </div>
         </div>
       </div>
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-header"><h3 class="card-title">Kegiatan Terkait</h3></div>
-          <div class="card-body p-0">
-            <table class="table table-bordered">
-              <thead><tr><th>Kegiatan</th><th>Tahun</th><th>Bulan</th><th>Status</th><th>Aksi</th></tr></thead>
-              <tbody>
-                <tr v-if="!kegiatan.length"><td colspan="5" class="text-center text-muted">Belum ada kegiatan</td></tr>
-                <tr v-for="k in kegiatan" :key="k.id">
-                  <td>{{ k.opsi_kegiatan?.nama_kegiatan }}</td>
-                  <td>{{ k.tahun }}</td>
-                  <td>{{ k.bulan }}</td>
-                  <td><span class="badge badge-info">{{ k.status }}</span></td>
-                  <td><Link :href="route('kegiatan.detail', k.id)" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></Link></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+
+      <!-- Kegiatan terkait -->
+      <div class="xl:col-span-2 card">
+        <div class="card-header">
+          <h2 class="card-title">Kegiatan Terkait</h2>
+          <span class="badge badge-gray">{{ kegiatan.length }}</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="table-th">Kegiatan</th>
+                <th class="table-th">Tahun</th>
+                <th class="table-th">Bulan</th>
+                <th class="table-th">Status</th>
+                <th class="table-th text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <tr v-if="!kegiatan.length">
+                <td colspan="5" class="px-4 py-8 text-center text-gray-400 text-sm">Belum ada kegiatan</td>
+              </tr>
+              <tr v-for="k in kegiatan" :key="k.id" class="hover:bg-gray-50/60 transition-colors">
+                <td class="table-td">{{ k.opsi_kegiatan?.nama_kegiatan }}</td>
+                <td class="table-td-muted">{{ k.tahun }}</td>
+                <td class="table-td-muted">{{ k.bulan }}</td>
+                <td class="table-td">
+                  <span :class="['badge', statusBadge(k.status)]">{{ k.status }}</span>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <Link :href="route('kegiatan.detail', k.id)" class="btn-icon btn-icon-info" title="Detail">
+                    <i class="fas fa-eye text-xs"></i>
+                  </Link>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-    <Link :href="route('desa.index')" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Kembali</Link>
   </AppLayout>
 </template>
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue'
 import { Link } from '@inertiajs/vue3'
-defineProps({ item: Object, kegiatan: Array, peta: Array })
+import { computed } from 'vue'
+
+const props = defineProps({ item: Object, kegiatan: Array, peta: Array })
+
+const infoRows = computed(() => [
+  { label: 'Kode Desa', value: props.item.kode_desa, mono: true },
+  { label: 'Nama Desa', value: props.item.nama_desa },
+  { label: 'Luas', value: props.item.luas },
+  { label: 'Kecamatan', value: props.item.nama_kecamatan },
+  { label: 'Kabupaten', value: props.item.nama_kabupaten },
+  { label: 'Provinsi', value: props.item.nama_provinsi },
+])
+
+const STATUS_BADGE = {
+  'disiapkan (IPDS)': 'badge-gray',
+  'digunakan': 'badge-indigo',
+  'scan peta': 'badge-amber',
+  'upload peta': 'badge-sky',
+  'selesai': 'badge-emerald',
+}
+function statusBadge(s) { return STATUS_BADGE[s] ?? 'badge-gray' }
 </script>

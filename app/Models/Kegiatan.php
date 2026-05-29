@@ -10,7 +10,9 @@ class Kegiatan extends Model
     use HasUuids;
 
     protected $table = 'kegiatan';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -20,7 +22,7 @@ class Kegiatan extends Model
 
     protected function casts(): array
     {
-        return ['tanggal_batas_cetak' => 'date'];
+        return ['tanggal_batas_cetak' => 'date:Y-m-d'];
     }
 
     public function opsiKegiatan()

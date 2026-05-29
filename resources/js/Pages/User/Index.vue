@@ -1,76 +1,65 @@
 <template>
   <AppLayout title="Manajemen User">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Daftar User</h3>
-        <Link :href="route('users.create')" class="btn btn-primary btn-sm">
-          <i class="fas fa-plus"></i> Tambah User
+    <DataTable :items="users" :col-count="4">
+      <template #actions>
+        <Link :href="route('users.create')" class="btn btn-primary">
+          <i class="fas fa-plus" style="font-size:11px"></i> Tambah User
         </Link>
-      </div>
-      <div class="card-body">
-        <DataTable :items="users" :col-count="4">
-          <template #headers>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Dibuat</th>
-          </template>
-          <template #row="{ row }">
-            <td>{{ row.username }}</td>
-            <td><span class="badge badge-info">{{ row.role }}</span></td>
-            <td>{{ formatDate(row.created_at) }}</td>
-          </template>
-          <template #rowActions="{ row }">
-            <Link :href="route('users.edit', row.id)" class="btn btn-sm btn-warning mr-1">
-              <i class="fas fa-edit"></i>
-            </Link>
-            <button @click="confirmDelete(row)" class="btn btn-sm btn-danger">
-              <i class="fas fa-trash"></i>
-            </button>
-          </template>
-        </DataTable>
-      </div>
-    </div>
+      </template>
+      <template #headers>
+        <th class="table-th">Username</th>
+        <th class="table-th">Role</th>
+        <th class="table-th">Dibuat</th>
+      </template>
+      <template #row="{ row }">
+        <td class="table-td font-medium">{{ row.username }}</td>
+        <td class="table-td">
+          <span :class="['badge', roleBadge(row.role)]">{{ row.role }}</span>
+        </td>
+        <td class="table-td-muted text-xs">{{ formatDate(row.created_at) }}</td>
+      </template>
+      <template #rowActions="{ row }">
+        <Link :href="route('users.edit', row.id)" class="btn-icon btn-icon-edit" title="Edit">
+          <i class="fas fa-pencil-alt text-xs"></i>
+        </Link>
+        <button @click="confirmDelete(row)" class="btn-icon btn-icon-danger" title="Hapus">
+          <i class="fas fa-trash text-xs"></i>
+        </button>
+      </template>
+    </DataTable>
 
-    <!-- Delete Modal -->
-    <div v-if="deleteTarget" class="modal fade show d-block" style="background:rgba(0,0,0,.5)">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Konfirmasi Hapus</h5>
-          </div>
-          <div class="modal-body">
-            Hapus user <strong>{{ deleteTarget.username }}</strong>?
-          </div>
-          <div class="modal-footer">
-            <button @click="deleteTarget = null" class="btn btn-secondary">Batal</button>
-            <button @click="doDelete" class="btn btn-danger">Hapus</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <DeleteModal v-if="deleteTarget" :name="deleteTarget.username"
+      @confirm="doDelete" @cancel="deleteTarget = null" />
   </AppLayout>
 </template>
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
+import DeleteModal from '@/Components/DeleteModal.vue'
 import { Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 defineProps({ users: Array })
-
 const deleteTarget = ref(null)
 
 function confirmDelete(row) { deleteTarget.value = row }
-
 function doDelete() {
   router.delete(route('users.destroy', deleteTarget.value.id), {
-    onFinish: () => { deleteTarget.value = null }
+    onFinish: () => { deleteTarget.value = null },
   })
 }
 
+const ROLE_BADGE = {
+  ADMIN: 'badge-red',
+  IPDS: 'badge-indigo',
+  SUBJECT_MATTER: 'badge-amber',
+  GUEST: 'badge-gray',
+}
+function roleBadge(r) { return ROLE_BADGE[r] ?? 'badge-gray' }
+
 function formatDate(d) {
   if (!d) return '-'
-  return new Date(d).toLocaleDateString('id-ID')
+  return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 </script>

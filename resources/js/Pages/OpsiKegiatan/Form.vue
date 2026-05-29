@@ -1,24 +1,33 @@
 <template>
   <AppLayout :title="item ? 'Edit Opsi Kegiatan' : 'Tambah Opsi Kegiatan'">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">{{ item ? 'Edit' : 'Tambah' }} Opsi Kegiatan</h3>
-      </div>
-      <div class="card-body">
-        <form @submit.prevent="submit">
-          <div class="form-group">
-            <label>Kode Kegiatan</label>
-            <input v-model="form.kode_kegiatan" type="text" class="form-control" :class="{ 'is-invalid': form.errors.kode_kegiatan }">
-            <div class="invalid-feedback">{{ form.errors.kode_kegiatan }}</div>
-          </div>
-          <div class="form-group">
-            <label>Nama Kegiatan</label>
-            <input v-model="form.nama_kegiatan" type="text" class="form-control" :class="{ 'is-invalid': form.errors.nama_kegiatan }">
-            <div class="invalid-feedback">{{ form.errors.nama_kegiatan }}</div>
-          </div>
-          <button type="submit" class="btn btn-primary mr-2" :disabled="form.processing">Simpan</button>
-          <Link :href="route('opsi-kegiatan.index')" class="btn btn-secondary">Batal</Link>
-        </form>
+    <div class="max-w-lg">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">{{ item ? 'Edit' : 'Tambah' }} Opsi Kegiatan</h2>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="submit" class="space-y-4">
+            <div>
+              <label class="form-label">Kode Kegiatan</label>
+              <input v-model="form.kode_kegiatan" type="text" class="form-field"
+                :class="{ 'form-field-error': form.errors.kode_kegiatan }" />
+              <p v-if="form.errors.kode_kegiatan" class="form-error">{{ form.errors.kode_kegiatan }}</p>
+            </div>
+            <div>
+              <label class="form-label">Nama Kegiatan</label>
+              <input v-model="form.nama_kegiatan" type="text" class="form-field"
+                :class="{ 'form-field-error': form.errors.nama_kegiatan }" />
+              <p v-if="form.errors.nama_kegiatan" class="form-error">{{ form.errors.nama_kegiatan }}</p>
+            </div>
+            <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+              <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                <i v-if="form.processing" class="fas fa-spinner fa-spin text-xs"></i>
+                <span v-else>Simpan</span>
+              </button>
+              <Link :href="route('opsi-kegiatan.index')" class="btn btn-secondary">Batal</Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </AppLayout>

@@ -1,39 +1,50 @@
 <template>
   <AppLayout :title="user ? 'Edit User' : 'Tambah User'">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">{{ user ? 'Edit User' : 'Tambah User' }}</h3>
-      </div>
-      <div class="card-body">
-        <form @submit.prevent="submit">
-          <div class="form-group">
-            <label>Username</label>
-            <input v-model="form.username" type="text" class="form-control" :class="{ 'is-invalid': form.errors.username }">
-            <div class="invalid-feedback">{{ form.errors.username }}</div>
-          </div>
+    <div class="max-w-md">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">{{ user ? 'Edit User' : 'Tambah User' }}</h2>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="submit" class="space-y-4">
+            <div>
+              <label class="form-label">Username</label>
+              <input v-model="form.username" type="text" class="form-field"
+                :class="{ 'form-field-error': form.errors.username }"
+                autocomplete="username" />
+              <p v-if="form.errors.username" class="form-error">{{ form.errors.username }}</p>
+            </div>
 
-          <div class="form-group">
-            <label>Password {{ user ? '(kosongkan jika tidak diubah)' : '' }}</label>
-            <input v-model="form.password" type="password" class="form-control" :class="{ 'is-invalid': form.errors.password }">
-            <div class="invalid-feedback">{{ form.errors.password }}</div>
-          </div>
+            <div>
+              <label class="form-label">
+                Password
+                <span v-if="user" class="text-gray-400 font-normal ml-1">(kosongkan jika tidak diubah)</span>
+              </label>
+              <input v-model="form.password" type="password" class="form-field"
+                :class="{ 'form-field-error': form.errors.password }"
+                autocomplete="new-password" />
+              <p v-if="form.errors.password" class="form-error">{{ form.errors.password }}</p>
+            </div>
 
-          <div class="form-group">
-            <label>Role</label>
-            <select v-model="form.role" class="form-control" :class="{ 'is-invalid': form.errors.role }">
-              <option value="">Pilih Role</option>
-              <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
-            </select>
-            <div class="invalid-feedback">{{ form.errors.role }}</div>
-          </div>
+            <div>
+              <label class="form-label">Role</label>
+              <select v-model="form.role" class="form-field"
+                :class="{ 'form-field-error': form.errors.role }">
+                <option value="">Pilih Role</option>
+                <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
+              </select>
+              <p v-if="form.errors.role" class="form-error">{{ form.errors.role }}</p>
+            </div>
 
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary mr-2" :disabled="form.processing">
-              {{ user ? 'Update' : 'Simpan' }}
-            </button>
-            <Link :href="route('users.index')" class="btn btn-secondary">Batal</Link>
-          </div>
-        </form>
+            <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+              <button type="submit" :disabled="form.processing" class="btn btn-primary">
+                <i v-if="form.processing" class="fas fa-spinner fa-spin text-xs"></i>
+                <span v-else>{{ user ? 'Update' : 'Simpan' }}</span>
+              </button>
+              <Link :href="route('users.index')" class="btn btn-secondary">Batal</Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </AppLayout>
@@ -54,10 +65,8 @@ const form = useForm({
 })
 
 function submit() {
-  if (props.user) {
-    form.put(route('users.update', props.user.id))
-  } else {
-    form.post(route('users.store'))
-  }
+  props.user
+    ? form.put(route('users.update', props.user.id))
+    : form.post(route('users.store'))
 }
 </script>
